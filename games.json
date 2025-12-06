@@ -112,5 +112,43 @@
       }
     },
     "image_path": null
+  },
+  {
+    "game_id": 4,
+    "results": {
+      "Amber": {
+        "placement": 1,
+        "bonus_stars": 0,
+        "coins": 0,
+        "most_coins": false,
+        "least_coins": false,
+        "minigame_rank": "none"
+      },
+      "Mandeep": {
+        "placement": 1,
+        "bonus_stars": 0,
+        "coins": 0,
+        "most_coins": false,
+        "least_coins": false,
+        "minigame_rank": "none"
+      },
+      "Rav": {
+        "placement": 1,
+        "bonus_stars": 0,
+        "coins": 0,
+        "most_coins": false,
+        "least_coins": false,
+        "minigame_rank": "none"
+      },
+      "Simer": {
+        "placement": 1,
+        "bonus_stars": 0,
+        "coins": 0,
+        "most_coins": false,
+        "least_coins": false,
+        "minigame_rank": "none"
+      }
+    },
+    "image_path": "images\\game_4.jpeg"
   }
 ]
