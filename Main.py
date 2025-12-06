@@ -7,6 +7,62 @@ from scoring import compute_game_points
 from consistency import compute_consistency_bonuses
 from state import init_state, save_games
 
+import base64
+import json
+import requests
+import streamlit as st
+
+GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]
+REPO_OWNER = st.secrets["REPO_OWNER"]
+REPO_NAME = st.secrets["REPO_NAME"]
+FILE_PATH = st.secrets["FILE_PATH"]
+BRANCH = st.secrets.get("BRANCH", "main")
+
+API_URL = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/contents/{FILE_PATH}"
+
+
+def load_games():
+    """
+    Fetch games.json from GitHub and return (games_list, sha).
+    games_list is a Python list; sha is required for updating.
+    """
+    headers = {"Authorization": f"token {GITHUB_TOKEN}"}
+    params = {"ref": BRANCH}
+
+    r = requests.get(API_URL, headers=headers, params=params)
+    r.raise_for_status()
+    data = r.json()
+
+    # GitHub returns base64-encoded file contents
+    content_str = base64.b64decode(data["content"]).decode("utf-8")
+    games = json.loads(content_str)  # this matches your list structure
+
+    sha = data["sha"]
+    return games, sha
+
+
+def save_games(games, sha, message="Update games.json from Streamlit"):
+    """
+    Update games.json in GitHub with new contents.
+    You MUST include the previous sha.
+    """
+    headers = {"Authorization": f"token {GITHUB_TOKEN}"}
+
+    new_content = json.dumps(games, indent=2)
+    b64_content = base64.b64encode(new_content.encode("utf-8")).decode("utf-8")
+
+    payload = {
+        "message": message,
+        "content": b64_content,
+        "sha": sha,
+        "branch": BRANCH,
+    }
+
+    r = requests.put(API_URL, headers=headers, json=payload)
+    r.raise_for_status()
+    return r.json()
+
+
 st.set_page_config(page_title="Mario Party Championship Tracker", layout="wide")
 init_state()
 
