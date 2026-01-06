@@ -122,7 +122,7 @@ def score_calculator_page(players):
     # -------- Single-winner selectors --------
     st.subheader("Single-winner bonuses")
 
-    most_items_winner = st.radio(
+    most_items_winner = st.multiselect(
         "Most items used (+1)",
         options=["None"] + players,
         index=0,
@@ -130,7 +130,7 @@ def score_calculator_page(players):
         key=f"most_items_winner_{game_id}",
     )
 
-    most_spaces_winner = st.radio(
+    most_spaces_winner = st.multiselect(
         "Most spaces travelled (+1)",
         options=["None"] + players,
         index=0,
