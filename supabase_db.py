@@ -1,10 +1,22 @@
+import os
+
 import streamlit as st
 from supabase import create_client
 
 @st.cache_resource
 def get_supabase():
-    url = st.secrets["https://irvkfwzzzuijtvfngzjc.supabase.co"]
-    key = st.secrets["eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlydmtmd3p6enVpanR2Zm5nempjIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2OTExNDI3OSwiZXhwIjoyMDg0NjkwMjc5fQ.1HptMEhjZg3QCliHOOxe_fGrbWdhRIk6JP1u2ezSxXY"]
+    url = st.secrets.get("SUPABASE_URL") or os.getenv("SUPABASE_URL")
+    key = (
+        st.secrets.get("SUPABASE_SERVICE_ROLE_KEY")
+        or st.secrets.get("SUPABASE_ANON_KEY")
+        or os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+        or os.getenv("SUPABASE_ANON_KEY")
+    )
+    if not url or not key:
+        raise ValueError(
+            "Supabase credentials missing. Set SUPABASE_URL and "
+            "SUPABASE_SERVICE_ROLE_KEY (or SUPABASE_ANON_KEY)."
+        )
     return create_client(url, key)
 
 def save_game(session_id: str, game_id: str, payload: dict):
