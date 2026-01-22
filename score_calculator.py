@@ -1,5 +1,31 @@
 # score_calculator.py
 import streamlit as st
+from supabase_db import save_game, load_games
+
+def score_calculator_page(players):
+    # ... all your scoring logic above ...
+    # raw_results must already exist
+    # game_id must already exist
+
+    st.divider()
+    st.subheader("Save / Load Games")
+
+    if st.button("Save Game"):
+        save_game(
+            session_id=st.session_state.session_id,
+            game_id=str(game_id),
+            payload=raw_results,
+        )
+        st.success("Saved to Supabase!")
+
+    saved = load_games(st.session_state.session_id)
+
+    st.write(f"Saved games: {len(saved)}")
+    for row in saved:
+        with st.expander(f"{row['created_at']} — Game {row['game_id']}"):
+            st.json(row["payload"])
+
+
 
 # ========= RULESET (single-game scoring) =========
 # 1. Placement: 1st 8, 2nd 6, 3rd 4, 4th 2
