@@ -2,6 +2,7 @@
 import os
 
 import streamlit as st
+from uuid import uuid4
 
 from score_calculator import score_calculator_page
 from scoreboard import scoreboard_page
