@@ -1,10 +1,30 @@
+import os
+
 import streamlit as st
 from supabase import create_client
 
+def _get_secret(name: str):
+    if name in st.secrets:
+        return st.secrets[name]
+    return os.getenv(name)
+
+
+def _raise_for_error(response, action: str):
+    error = getattr(response, "error", None)
+    if error:
+        raise RuntimeError(f"Supabase {action} failed: {error}")
+    return response
+
+
 @st.cache_resource
 def get_supabase():
-    url = st.secrets["https://irvkfwzzzuijtvfngzjc.supabase.co"]
-    key = st.secrets["eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlydmtmd3p6enVpanR2Zm5nempjIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2OTExNDI3OSwiZXhwIjoyMDg0NjkwMjc5fQ.1HptMEhjZg3QCliHOOxe_fGrbWdhRIk6JP1u2ezSxXY"]
+    url = _get_secret("SUPABASE_URL")
+    key = _get_secret("SUPABASE_SERVICE_ROLE_KEY") or _get_secret("SUPABASE_ANON_KEY")
+    if not url or not key:
+        raise ValueError(
+            "Supabase credentials missing. Set SUPABASE_URL and "
+            "SUPABASE_SERVICE_ROLE_KEY (or SUPABASE_ANON_KEY)."
+        )
     return create_client(url, key)
 
 def save_game(session_id: str, game_id: str, payload: dict):
@@ -14,16 +34,17 @@ def save_game(session_id: str, game_id: str, payload: dict):
         "game_id": game_id,
         "payload": payload
     }).execute()
-    return res
+    return _raise_for_error(res, "insert")
 
 def load_games(session_id: str, limit: int = 50):
     sb = get_supabase()
     res = (
         sb.table("mario_scores")
-        .select("id, created_at, game_id, payload")
+        .select("id, game_id, payload")
         .eq("session_id", session_id)
-        .order("created_at", desc=True)
+        .order("id", desc=True)
         .limit(limit)
         .execute()
     )
-    return res.data
+    res = _raise_for_error(res, "load")
+    return getattr(res, "data", res)
