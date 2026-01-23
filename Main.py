@@ -32,6 +32,11 @@ def init_state():
             st.session_state.next_game_id = 1
 
     if "session_id" not in st.session_state:
+        st.session_state.session_id = (
+            st.secrets.get("LEAGUE_ID")
+            or os.getenv("LEAGUE_ID")
+            or "default_league"
+        )
         st.session_state.session_id = str(uuid4())
 
 
