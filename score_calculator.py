@@ -186,5 +186,6 @@ def score_calculator_page(players):
 
     st.write(f"Saved games: {len(saved)}")
     for row in saved:
-        with st.expander(f"{row['created_at']} — Game {row['game_id']}"):
+        label = row.get("created_at") or f"ID {row.get('id', 'n/a')}"
+        with st.expander(f"{label} — Game {row['game_id']}"):
             st.json(row["payload"])
