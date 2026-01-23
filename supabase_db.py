@@ -9,15 +9,17 @@ def _get_secret(name: str):
     return os.getenv(name)
 
 
+def _raise_for_error(response, action: str):
+    error = getattr(response, "error", None)
+    if error:
+        raise RuntimeError(f"Supabase {action} failed: {error}")
+    return response
+
+
 @st.cache_resource
 def get_supabase():
-    url = st.secrets.get("SUPABASE_URL") or os.getenv("SUPABASE_URL")
-    key = (
-        st.secrets.get("SUPABASE_SERVICE_ROLE_KEY")
-        or st.secrets.get("SUPABASE_ANON_KEY")
-        or os.getenv("SUPABASE_SERVICE_ROLE_KEY")
-        or os.getenv("SUPABASE_ANON_KEY")
-    )
+    url = _get_secret("SUPABASE_URL")
+    key = _get_secret("SUPABASE_SERVICE_ROLE_KEY") or _get_secret("SUPABASE_ANON_KEY")
     if not url or not key:
         raise ValueError(
             "Supabase credentials missing. Set SUPABASE_URL and "
@@ -32,9 +34,7 @@ def save_game(session_id: str, game_id: str, payload: dict):
         "game_id": game_id,
         "payload": payload
     }).execute()
-    if res.error:
-        raise RuntimeError(f"Supabase insert failed: {res.error}")
-    return res
+    return _raise_for_error(res, "insert")
 
 def load_games(session_id: str, limit: int = 50):
     sb = get_supabase()
@@ -46,6 +46,5 @@ def load_games(session_id: str, limit: int = 50):
         .limit(limit)
         .execute()
     )
-    if res.error:
-        raise RuntimeError(f"Supabase load failed: {res.error}")
-    return res.data
+    res = _raise_for_error(res, "load")
+    return getattr(res, "data", res)
