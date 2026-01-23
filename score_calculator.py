@@ -1,29 +1,6 @@
 # score_calculator.py
 import streamlit as st
-from supabase_db import save_game, load_games
-
-def score_calculator_page(players):
-    # ... all your scoring logic above ...
-    # raw_results must already exist
-    # game_id must already exist
-
-    st.divider()
-    st.subheader("Save / Load Games")
-
-    if st.button("Save Game"):
-        save_game(
-            session_id=st.session_state.session_id,
-            game_id=str(game_id),
-            payload=raw_results,
-        )
-        st.success("Saved to Supabase!")
-
-    saved = load_games(st.session_state.session_id)
-
-    st.write(f"Saved games: {len(saved)}")
-    for row in saved:
-        with st.expander(f"{row['created_at']} — Game {row['game_id']}"):
-            st.json(row["payload"])
+from supabase_db import load_games, save_game
 
 
 
@@ -187,3 +164,28 @@ def score_calculator_page(players):
         st.success(f"Game {game_id} saved.")
         st.write("Points for this game:")
         st.json(game_points)
+
+        try:
+            save_game(
+                session_id=st.session_state.session_id,
+                game_id=str(game_id),
+                payload=game,
+            )
+            st.success("Saved to Supabase!")
+        except Exception as exc:
+            st.error(f"Supabase save failed: {exc}")
+
+    st.divider()
+    st.subheader("Supabase Saved Games")
+
+    try:
+        saved = load_games(st.session_state.session_id)
+    except Exception as exc:
+        st.error(f"Supabase load failed: {exc}")
+        saved = []
+
+    st.write(f"Saved games: {len(saved)}")
+    for row in saved:
+        label = row.get("created_at") or f"ID {row.get('id', 'n/a')}"
+        with st.expander(f"{label} — Game {row['game_id']}"):
+            st.json(row["payload"])
