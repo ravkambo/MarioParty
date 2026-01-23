@@ -2,6 +2,7 @@
 import os
 
 import streamlit as st
+from uuid import uuid4
 
 from score_calculator import score_calculator_page
 from scoreboard import scoreboard_page
@@ -31,11 +32,7 @@ def init_state():
             st.session_state.next_game_id = 1
 
     if "session_id" not in st.session_state:
-        st.session_state.session_id = (
-            st.secrets.get("LEAGUE_ID")
-            or os.getenv("LEAGUE_ID")
-            or "default_league"
-        )
+        st.session_state.session_id = str(uuid4())
 
 
 

@@ -11,8 +11,13 @@ def _get_secret(name: str):
 
 @st.cache_resource
 def get_supabase():
-    url = _get_secret("SUPABASE_URL")
-    key = _get_secret("SUPABASE_SERVICE_ROLE_KEY") or _get_secret("SUPABASE_ANON_KEY")
+    url = st.secrets.get("SUPABASE_URL") or os.getenv("SUPABASE_URL")
+    key = (
+        st.secrets.get("SUPABASE_SERVICE_ROLE_KEY")
+        or st.secrets.get("SUPABASE_ANON_KEY")
+        or os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+        or os.getenv("SUPABASE_ANON_KEY")
+    )
     if not url or not key:
         raise ValueError(
             "Supabase credentials missing. Set SUPABASE_URL and "
