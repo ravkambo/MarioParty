@@ -2,6 +2,7 @@
 import os
 
 import streamlit as st
+from uuid import uuid4
 
 from score_calculator import score_calculator_page
 from scoreboard import scoreboard_page
@@ -36,6 +37,7 @@ def init_state():
             or os.getenv("LEAGUE_ID")
             or "default_league"
         )
+        st.session_state.session_id = str(uuid4())
 
 
 
