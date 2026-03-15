@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(echo:*)",
+      "Bash(streamlit run:*)",
+      "Bash(gh repo:*)",
+      "Bash(git clone:*)",
+      "Bash(mkdir:*)"
+    ]
+  }
+}
