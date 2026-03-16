@@ -63,19 +63,12 @@ def compute_game_points(game, players):
         if results[p].get("most_spaces_travelled", False):
             points[p] += 1
 
-    # --- Minigame wins: most +3, second-most +1, ties get full points ---
-    mg_wins = {p: int(results[p].get("minigame_wins", 0)) for p in players}
-    sorted_unique_mg = sorted(set(mg_wins.values()), reverse=True)
-    if sorted_unique_mg and sorted_unique_mg[0] > 0:
-        most_wins = sorted_unique_mg[0]
-        for p in players:
-            if mg_wins[p] == most_wins:
-                points[p] += MINIGAME_MOST_WINS_POINTS
-        if len(sorted_unique_mg) > 1 and sorted_unique_mg[1] > 0:
-            second_wins = sorted_unique_mg[1]
-            for p in players:
-                if mg_wins[p] == second_wins:
-                    points[p] += MINIGAME_SECOND_WINS_POINTS
+    # --- Minigame wins: most +3, second-most +1 ---
+    for p in players:
+        if results[p].get("minigame_most_wins", False):
+            points[p] += MINIGAME_MOST_WINS_POINTS
+        if results[p].get("minigame_second_wins", False):
+            points[p] += MINIGAME_SECOND_WINS_POINTS
 
     return points
 
@@ -117,21 +110,14 @@ def score_calculator_page(players):
                 key=f"{player}_coins_{game_id}",
             )
 
-            minigame_wins = st.number_input(
-                "Minigame wins",
-                min_value=0,
-                max_value=99,
-                step=1,
-                key=f"{player}_minigame_wins_{game_id}",
-            )
-
             raw_results[player] = {
                 "placement": placement,
                 "bonus_stars": bonus_stars,
                 "coins": coins,
-                "minigame_wins": minigame_wins,
                 "most_items_used": False,
                 "most_spaces_travelled": False,
+                "minigame_most_wins": False,
+                "minigame_second_wins": False,
             }
 
     st.markdown("---")
@@ -155,11 +141,29 @@ def score_calculator_page(players):
         key=f"most_spaces_winner_{game_id}",
     )
 
+    minigame_most_winners = st.multiselect(
+        "Most minigame wins (+3)",
+        options=players,
+        key=f"minigame_most_winners_{game_id}",
+    )
+
+    minigame_second_winners = st.multiselect(
+        "Second-most minigame wins (+1)",
+        options=players,
+        key=f"minigame_second_winners_{game_id}",
+    )
+
     if most_items_winner != "None":
         raw_results[most_items_winner]["most_items_used"] = True
 
     if most_spaces_winner != "None":
         raw_results[most_spaces_winner]["most_spaces_travelled"] = True
+
+    for p in minigame_most_winners:
+        raw_results[p]["minigame_most_wins"] = True
+
+    for p in minigame_second_winners:
+        raw_results[p]["minigame_second_wins"] = True
 
     st.markdown("---")
 
@@ -215,7 +219,7 @@ def score_calculator_page(players):
         try:
             saved = load_games(st.session_state.session_id)
             st.write(f"Total saved: {len(saved)}")
-            for row in saved:
+            for row in sorted(saved, key=lambda g: g.get("game_id", 0)):
                 label = row.get("created_at") or f"ID {row.get('id', 'n/a')}"
                 with st.expander(f"{label} — Game {row['game_id']}"):
                     st.json(row["payload"])
